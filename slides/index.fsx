@@ -85,18 +85,27 @@ Generates:
 *)
 (*** include-value: imparativeStr ***)
 (**
+But please don't write code like this in F#
+
 ***
 
 ### Why F#
 
-* Immutability
+* .NET language
+ * Fully supported
+ * Open source with a significant community
+* Quicker time-to-market
+ * Read-Evaluate-Print Loop (REPL)
 * Correctness
-* `null` prohibited (in F# types)
+ * Immutability
+ * `null` prohibited (in F# types)
 * High-fidelity code
+ * Succinct Domain-Driven Design
+ * Avoid "primitive obsession"
 * Embarassingly parallelizable
+ * Highly distributable
 
 ***
-
 ### Fully integrated with the .NET CLR
 *)
 open NodaTime
@@ -111,7 +120,6 @@ let mockClock =
 let mockTime = mockClock.Now
 (**
 ***
-
 ### Everything is a function
 *)
 type HttpContext = { OwinEnvironment : Map<string,obj> }
@@ -120,20 +128,28 @@ type processHttpRequestAsync =
   HttpContext -> Async<HttpContext option>
 (**
 ***
-
-### Immutable Structures
-
-#### Tuples
+### Correctness
 *)
 let myTuple = 5, "string"
 
-let result, output = System.Int64.TryParse("NotALong")
+// This is a boolean test, not an assignment
+myTuple = (10, "newString")
 (**
+Mutation must be explicit
+*)
+let mutable mutatable = 10
+
+mutatable <- 42
+(**
+F# types don't have the concept of null
+
+    [lang=fs]
+    // Compiler error:
+    // The type (int * string) does not have 'null' as a proper value
+    if myTuple = null then failwith "Bad Nulls!"
+
 ---
-
-### Immutable Structures
-
-#### Records
+### Records
 *)
 type MyRecord =
   { Index : int
@@ -143,11 +159,11 @@ let record = { Index = 5; Key = myObj.Name }
 
 let newRecord = { record with Index = 7 }
 (**
+
+Includes structural equality and comparison for free
+
 ---
-
-### Immutable Structures
-
-#### Discriminated Unions
+### Discriminated Unions
 *)
 type Result<'a,'b> =
   | Success of 'a
@@ -157,11 +173,11 @@ type RiskyFailure =
   | DependencyTimedOut
   | ValidationError of string
 (**
+
+Model your domain explicitly
+
 ---
-
-### Immutable Structures
-
-#### Discriminated Unions
+### Discriminated Unions
 *)
 let riskyFunction r =
   match r with
@@ -177,32 +193,36 @@ Example result:
 let badRecord = { newRecord with Key = null }
 (*** include-value: riskyFunction badRecord ***)
 (**
-***
+---
+### Domain Modeling
 
-### Units of Measure
-
+A leaky model
 *)
-[<Measure>] type m
-[<Measure>] type s
-[<Measure>] type hr
-[<Measure>] type mi
-[<Measure>] type mph = mi/hr
+type LeakyEmailContactInfo =
+  { EmailAddress : string
+    IsVerified : bool }
+(**
+---
+### Domain Modeling
+*)
+type EmailAddress = | EmailAddress of string
 
-let toMiles dis = dis * (1M/1609.34M<m/mi>)
-let toHours sec = sec * (1M/3600M<s/hr>)
-let invert (v : decimal<'u>) : decimal<1/'u> = (1M/v)
-let toMph = invert >> toHours >> invert >> toMiles
+type EmailContactInfo =
+  private
+    | Unverified of EmailAddress
+    | Verified of EmailAddress * Instant
 
-let speedOfSound = toMph 343.59M<m/s>
+let create email = Unverified email
+
+let verify info dateVerified =
+  match info with
+  | Unverified email -> Verified (email, dateVerified)
+  | Verified _ -> info
 (**
 
-`speedOfSound`:
-
-*)
-(*** include-value: speedOfSound ***)
-(**
 ***
-### Type Providers
+### Time to market
+#### Type Providers
 *)
 open FSharp.Data
 
@@ -224,7 +244,7 @@ let (|IsRequired|IsOptional|) (param : SwaggerApi.Parameter2) =
 
 (**
 ---
-### Strongly Types
+### Strongly Typed
 *)
 let requiredPostParameters =
   petstore.Paths.Pets.Post.Parameters
@@ -243,48 +263,22 @@ Required Parameters:
 
 (**
 ***
+### Highly Distributable
+
+![MBrace Example](http://www.m-brace.net/assets/images/code/example-flow.png)
+
+This is the only piece of code that you've seen that hasn't been executed in this presentation.
+
+***
 
 ## Skip a Grade
 * Don Syme, creator of F#, co-created generics in the CLR
-* Asynchronous computation expressions
- * `await`/`async`
-* Type Inference
- * `var`
-* Pattern Matching
- * Exception filters
-* Railway-Oriented Programming
- * `Nullable` and `null` propogation
+* Asynchronous computation expressions <span style="font-size:75%">(C#: `await`/`async`)</span>
+* Type Inference <span style="font-size:75%">(C#: `var`)</span>
+* Pattern Matching <span style="font-size:75%">(C#: exception fiters)</span>
+* Railway-Oriented Programming <span style="font-size:75%">(C#: `?.` `null` propogation)</span>
 * Immutable by default
 * Write less code that provides more value
-*)
-
-(**
----
-
-### Async Computation Expressions
-*)
-(*** hide ***)
-let buildRandomOrgUrl : int64 -> string =
-  sprintf "https://www.random.org/integers/?num=1&min=1&max=%d&col=1&base=10&format=plain&rnd=new"
-(**
-*)
-
-let getRandomLongOverTheWebAsync maxValue = async {
-  printfn "Getting Bytes..."
-  let! bytes =
-    buildRandomOrgUrl maxValue
-    |> Http.AsyncRequestString
-  return int64 bytes
-}
-
-let myRand =
-  getRandomLongOverTheWebAsync 1000L
-  |> Async.RunSynchronously
-(**
- * Generates:
-*)
-(*** include-value: myRand ***)
-(**
 
 ***
 
@@ -308,7 +302,9 @@ let myRand =
  * [WebSharper](http://websharper.com)
  * [Suave](http://suave.io)
  * [Canopy](https://lefthandedgoat.github.io/canopy/index.html)
-* [Akka.Net](http://getakka.net)
+* Distributed
+ * [Akka.Net](http://getakka.net)
+ * [MBrace](http://www.m-brace.net/)
 * [FsReveal](https://fsprojects.github.io/FsReveal/index.html)
 
 ***
