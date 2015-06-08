@@ -2,4 +2,6 @@ source https://nuget.org/api/v2
 
 nuget FsReveal
 nuget FAKE
+nuget FSharp.Data
+nuget NodaTime
 nuget Suave

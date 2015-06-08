@@ -4,6 +4,8 @@ NUGET
     FAKE (3.34.6)
     FSharp.Compiler.Service (0.0.89)
     FSharp.Core (3.1.2.1)
+    FSharp.Data (2.2.2)
+      Zlib.Portable (>= 1.10.0) - framework: portable-net40+sl50+wp80+win80
     FSharp.Formatting (2.9.6)
       FSharp.Compiler.Service (>= 0.0.87)
       FSharpVSPowerTools.Core (1.8.0)
@@ -12,6 +14,8 @@ NUGET
     FsPickler (1.2.5)
     FsReveal (0.8.0)
       FSharp.Formatting (>= 2.7.5)
+    NodaTime (1.3.1)
     Suave (0.28.1)
       FSharp.Core (>= 3.1.2.1)
       FsPickler (>= 1.0.7)
+    Zlib.Portable (1.10.0) - framework: portable-net40+sl50+wp80+win80
