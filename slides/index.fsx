@@ -10,6 +10,7 @@
 (*** hide ***)
 #r "../packages/NodaTime/lib/portable-net4+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1+XamariniOS1/NodaTime.dll"
 #r "../packages/FSharp.Data/lib/net40/FSharp.Data.dll"
+#r "../packages/Unquote/lib/net45/Unquote.dll"
 type Lanuguage = int
 let functional : Lanuguage = 0
 let ``C#`` = functional
@@ -263,6 +264,25 @@ Required Parameters:
 
 (**
 ***
+### Write better tests
+*)
+open Swensen.Unquote
+
+let add a b = a + 1
+
+let ``When 2 is added to 2 expect 4``() =
+  test <@ add 2 2 |> factorial = 24 @>
+(**
+Run the test
+*)
+(*** define-output:test ***)
+``When 2 is added to 2 expect 4``()
+(**
+Get high-quality test output
+*)
+(*** include-output: test ***)
+(**
+***
 ### Highly Distributable
 
 ![MBrace Example](http://www.m-brace.net/assets/images/code/example-flow.png)
@@ -271,7 +291,7 @@ This is the only piece of code that you've seen that hasn't been executed in thi
 
 ***
 
-## Skip a Grade
+## Skip a version in .NET
 * Don Syme, creator of F#, co-created generics in the CLR
 * Asynchronous computation expressions <span style="font-size:75%">(C#: `await`/`async`)</span>
 * Type Inference <span style="font-size:75%">(C#: `var`)</span>

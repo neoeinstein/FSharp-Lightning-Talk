@@ -5,3 +5,4 @@ nuget FAKE
 nuget FSharp.Data
 nuget NodaTime
 nuget Suave
+nuget Unquote
