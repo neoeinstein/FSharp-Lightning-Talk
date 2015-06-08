@@ -61,7 +61,6 @@ type Concrete() =
     member val Name = "World" with get, set
     member x.Hello() = sprintf "Hello %s!" (x :> IInterface).Name
 (**
-
 ---
 
 ### Static Mocking
@@ -73,7 +72,6 @@ let myObj =
         with get () = "MockWorld"
         and set _ = () }
 (**
-
 ---
 
 ### Imparative
@@ -87,6 +85,15 @@ Generates:
 *)
 (*** include-value: imparativeStr ***)
 (**
+***
+
+### Why F#
+
+* Immutability
+* Correctness
+* `null` prohibited (in F# types)
+* High-fidelity code
+* Embarassingly parallelizable
 
 ***
 
@@ -99,43 +106,79 @@ let compiledAt = SystemClock.Instance.Now
 let mockClock =
   { new IClock with
       member __.Now
-        with get() = Instant.FromSecondsSinceUnixEpoch(0L)}
+        with get() = Instant.FromSecondsSinceUnixEpoch(0L) }
 
 let mockTime = mockClock.Now
 (**
-
 ***
-### Why F#
 
-* Immutability
-* Correctness
-* Less `null`
-* Type providers
-* High-fidelity code
+### Everything is a function
+*)
+type HttpContext = { OwinEnvironment : Map<string,obj> }
 
----
+type processHttpRequestAsync =
+  HttpContext -> Async<HttpContext option>
+(**
+***
+
 ### Immutable Structures
 
 #### Tuples
 *)
 let myTuple = 5, "string"
+
+let result, output = System.Int64.TryParse("NotALong")
 (**
+---
+
+### Immutable Structures
 
 #### Records
 *)
 type MyRecord =
   { Index : int
     Key : string }
+
+let record = { Index = 5; Key = myObj.Name }
+
+let newRecord = { record with Index = 7 }
 (**
+---
+
+### Immutable Structures
 
 #### Discriminated Unions
 *)
 type Result<'a,'b> =
   | Success of 'a
   | Failure of 'b
-(**
 
+type RiskyFailure =
+  | DependencyTimedOut
+  | ValidationError of string
+(**
+---
+
+### Immutable Structures
+
+#### Discriminated Unions
+*)
+let riskyFunction r =
+  match r with
+  | { Key = null } ->
+    Failure <| ValidationError "Null Name"
+  | _ ->
+    Success r
+(**
+Example result:
+*)
+(*** include-value: riskyFunction newRecord ***)
+(*** hide ***)
+let badRecord = { newRecord with Key = null }
+(*** include-value: riskyFunction badRecord ***)
+(**
 ***
+
 ### Units of Measure
 
 *)
@@ -203,14 +246,16 @@ Required Parameters:
 
 ## Skip a Grade
 * Don Syme, creator of F#, co-created generics in the CLR
-* Asynchronous computation expressions, precursor of `await`/`async`
+* Asynchronous computation expressions
+ * `await`/`async`
 * Type Inference
+ * `var`
 * Pattern Matching
  * Exception filters
-* `Option` type
- * `Nullable` and `null` propogation
 * Railway-Oriented Programming
+ * `Nullable` and `null` propogation
 * Immutable by default
+* Write less code that provides more value
 *)
 
 (**
